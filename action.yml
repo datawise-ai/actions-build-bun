@@ -39,7 +39,8 @@ runs:
         
     - name: Be sure there is no .npmrc
       shell: bash
-      run: rm .npmrc || true
+      run: |
+        rm .npmrc || true
 
     - name: set DATAWISE_PACKAGES_TOKEN
       shell: bash
@@ -48,10 +49,14 @@ runs:
 
     - uses: oven-sh/setup-bun@v2
       shell: bash
-    - run: bun install
+      run: |
+        bun install
 
-    - run: bun next lint --quiet
+    - name: Bun Lint
       shell: bash
-
-    - run: bun next build
+      run: |
+        bun next lint --quiet
+      
+    - name: Bun NEXT build
+      run: bun next build
       shell: bash
