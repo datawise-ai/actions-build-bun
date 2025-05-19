@@ -26,25 +26,32 @@ runs:
 #   "@datawise-ai" = { token = "$DATAWISE_PACKAGES_TOKEN", url = "https://npm.pkg.github.com" }
 
     - name: update bunfig.tml [bun install cache] 
+      shell: bash
       run: |
         echo '[install.cache]'                >> bunfig.toml
         echo 'dir = "./.bun/install/cache"'   >> bunfig.toml   # the directory to use for the cache
         echo 'disableManifest = false'        >> bunfig.toml   # when true, always resolve the latest versions from the registry
 
     - name: cat bunfig.tml  
+      shell: bash
       run: |
         cat bunfig.toml 
         
     - name: Be sure there is no .npmrc
+      shell: bash
       run: rm .npmrc || true
 
     - name: set DATAWISE_PACKAGES_TOKEN
+      shell: bash
       run: |
         echo DATAWISE_PACKAGES_TOKEN=${{ inputs.DATAWISE_PACKAGES_TOKEN }} >> $GITHUB_ENV
 
     - uses: oven-sh/setup-bun@v2
+      shell: bash
     - run: bun install
 
     - run: bun next lint --quiet
+      shell: bash
 
     - run: bun next build
+      shell: bash
