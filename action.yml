@@ -48,6 +48,8 @@ runs:
         echo DATAWISE_PACKAGES_TOKEN=${{ inputs.DATAWISE_PACKAGES_TOKEN }} >> $GITHUB_ENV
 
     - uses: oven-sh/setup-bun@v2
+
+    - name: bun install
       shell: bash
       run: |
         bun install
