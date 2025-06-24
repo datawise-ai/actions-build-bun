@@ -1,20 +1,12 @@
 name: "datawise-build-bun"
 description: "datawise build bun"
 inputs:
-  NODE_VERSION:
-    required: true
   DATAWISE_PACKAGES_TOKEN:
     required: false
     default: "invalid"    
 runs:
   using: "composite"
   steps:
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ inputs.NODE_VERSION }}
-        registry-url: 'https://npm.pkg.github.com'
-
     - name: BUN install cache Cache - key [bun.lock] 
       uses: actions/cache@v4
       with:
@@ -48,6 +40,8 @@ runs:
         echo DATAWISE_PACKAGES_TOKEN=${{ inputs.DATAWISE_PACKAGES_TOKEN }} >> $GITHUB_ENV
 
     - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest   
 
     - name: bun install
       shell: bash
