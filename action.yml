@@ -8,6 +8,11 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Export DATAWISE_PACKAGES_TOKEN as env var
+      shell: bash
+      run: |
+        echo "DATAWISE_PACKAGES_TOKEN=${{ inputs.DATAWISE_PACKAGES_TOKEN }}" >> $GITHUB_ENV
+  
     - name: Restore Bun install cache
       uses: actions/cache@v4
       with:
