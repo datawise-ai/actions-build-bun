@@ -13,7 +13,7 @@ runs:
         path: "./.bun/install/cache"
         key: ${{ hashFiles('bun.lock') }}
 
-#   you should have this for private repository in bunfig.tml
+#   you should have this for private repository in bunfig.toml
 #   [install.scopes]
 #   "@datawise-ai" = { token = "$DATAWISE_PACKAGES_TOKEN", url = "https://npm.pkg.github.com" }
 
