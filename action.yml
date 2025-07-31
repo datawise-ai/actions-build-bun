@@ -4,6 +4,10 @@ inputs:
   DATAWISE_PACKAGES_TOKEN:
     required: false
     default: "invalid"
+  ENABLE_LINT:
+    required: false
+    default: "false"
+    description: "Enable lint step (true/false)"
 
 runs:
   using: "composite"
@@ -51,6 +55,7 @@ runs:
       run: bun install --frozen-lockfile
 
     - name: Bun Lint
+      if: ${{ inputs.ENABLE_LINT == 'true' }}    
       shell: bash
       run: bun run lint
 
