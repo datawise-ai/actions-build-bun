@@ -3,16 +3,16 @@ description: "datawise build bun"
 inputs:
   DATAWISE_PACKAGES_TOKEN:
     required: false
-    default: "invalid"    
+    default: "invalid"
+
 runs:
   using: "composite"
   steps:
-    - name: BUN install cache Cache - key [bun.lock] 
+    - name: Restore Bun install cache
       uses: actions/cache@v4
       with:
-        path: "./.bun/install/cache"
-        key: ${{ hashFiles('bun.lock') }}
-
+        path: ./.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
 #   you should have this for private repository in bunfig.toml
 #   [install.scopes]
 #   "@datawise-ai" = { token = "$DATAWISE_PACKAGES_TOKEN", url = "https://npm.pkg.github.com" }
@@ -28,31 +28,27 @@ runs:
       shell: bash
       run: |
         cat bunfig.toml 
-        
-    - name: Be sure there is no .npmrc
+    
+    - name: Show bunfig.toml
       shell: bash
-      run: |
-        rm .npmrc || true
+      run: cat bunfig.toml
 
-    - name: set DATAWISE_PACKAGES_TOKEN
+    - name: Remove .npmrc (if exists)
       shell: bash
-      run: |
-        echo DATAWISE_PACKAGES_TOKEN=${{ inputs.DATAWISE_PACKAGES_TOKEN }} >> $GITHUB_ENV
+      run: rm -f .npmrc
 
     - uses: oven-sh/setup-bun@v2
       with:
-        bun-version: latest   
+        bun-version: latest
 
-    - name: bun install
+    - name: Bun install
       shell: bash
-      run: |
-        bun install
+      run: bun install --frozen-lockfile
 
     - name: Bun Lint
       shell: bash
-      run: |
-        bun next lint --quiet
-      
+      run: bun run lint
+
     - name: Bun NEXT build
-      run: bun next build
       shell: bash
+      run: bun run build
