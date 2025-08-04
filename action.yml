@@ -40,11 +40,6 @@ runs:
         echo '[install.cache]'                >> bunfig.toml
         echo 'dir = "./.bun/install/cache"'   >> bunfig.toml   # the directory to use for the cache
         echo 'disableManifest = false'        >> bunfig.toml   # when true, always resolve the latest versions from the registry
-
-    - name: cat bunfig.tml  
-      shell: bash
-      run: |
-        cat bunfig.toml 
     
     - name: Show bunfig.toml
       shell: bash
