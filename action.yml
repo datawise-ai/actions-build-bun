@@ -16,7 +16,15 @@ runs:
       shell: bash
       run: |
         echo "DATAWISE_PACKAGES_TOKEN=${{ inputs.DATAWISE_PACKAGES_TOKEN }}" >> $GITHUB_ENV
-  
+ 
+    - name: Restore node_modules cache
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node_modules-${{ hashFiles('bun.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-node_modules-
+
     - name: Restore Bun install cache
       uses: actions/cache@v4
       with:
@@ -59,6 +67,6 @@ runs:
       shell: bash
       run: bun run lint
 
-    - name: Bun NEXT build
+    - name: Bun  build
       shell: bash
       run: bun run build
