@@ -1,13 +1,25 @@
 name: "datawise-build-bun"
 description: "datawise build bun"
+
 inputs:
   DATAWISE_PACKAGES_TOKEN:
     required: false
     default: "invalid"
+
   ENABLE_LINT:
     required: false
     default: "false"
     description: "Enable lint step (true/false)"
+
+  ENABLE_TESTS:
+    required: false
+    default: "false"
+    description: "Enable test step (true/false)"
+
+  TEST_CONTINUE_ON_ERROR:
+    required: false
+    default: "false"
+    description: "If true, workflow continues even when tests fail"
 
 runs:
   using: "composite"
@@ -30,16 +42,17 @@ runs:
       with:
         path: ./.bun/install/cache
         key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-#   you should have this for private repository in bunfig.toml
-#   [install.scopes]
-#   "@datawise-ai" = { token = "$DATAWISE_PACKAGES_TOKEN", url = "https://npm.pkg.github.com" }
 
-    - name: update bunfig.tml [bun install cache] 
+    # you should have this for private repository in bunfig.toml
+    # [install.scopes]
+    # "@datawise-ai" = { token = "$DATAWISE_PACKAGES_TOKEN", url = "https://npm.pkg.github.com" }
+
+    - name: update bunfig.toml [bun install cache]
       shell: bash
       run: |
-        echo '[install.cache]'                >> bunfig.toml
-        echo 'dir = "./.bun/install/cache"'   >> bunfig.toml   # the directory to use for the cache
-        echo 'disableManifest = false'        >> bunfig.toml   # when true, always resolve the latest versions from the registry
+        echo '[install.cache]'              >> bunfig.toml
+        echo 'dir = "./.bun/install/cache"' >> bunfig.toml
+        echo 'disableManifest = false'      >> bunfig.toml
     
     - name: Show bunfig.toml
       shell: bash
@@ -58,10 +71,49 @@ runs:
       run: bun install --frozen-lockfile
 
     - name: Bun Lint
-      if: ${{ inputs.ENABLE_LINT == 'true' }}    
+      if: ${{ inputs.ENABLE_LINT == 'true' }}
       shell: bash
       run: bun run lint
 
-    - name: Bun  build
+    - name: Bun test
+      if: ${{ inputs.ENABLE_TESTS == 'true' }}
+      continue-on-error: ${{ inputs.TEST_CONTINUE_ON_ERROR == 'true' }}
+      shell: bash
+      run: |
+        mkdir -p test-results
+        bun test --reporter junit --reporter-outfile test-results/junit.xml
+
+    - name: Test summary
+      if: ${{ inputs.ENABLE_TESTS == 'true' }}
+      shell: bash
+      run: |
+        if [ -f test-results/junit.xml ]; then
+
+          TOTAL=$(grep -o 'tests="[0-9]*"' test-results/junit.xml | head -1 | cut -d'"' -f2)
+          FAIL=$(grep -o 'failures="[0-9]*"' test-results/junit.xml | head -1 | cut -d'"' -f2)
+          SKIP=$(grep -o 'skipped="[0-9]*"' test-results/junit.xml | head -1 | cut -d'"' -f2)
+
+          PASS=$((TOTAL-FAIL-SKIP))
+
+          echo "## 🧪 Bun Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Result | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ✅ Passed | $PASS |" >> $GITHUB_STEP_SUMMARY
+          echo "| ❌ Failed | $FAIL |" >> $GITHUB_STEP_SUMMARY
+          echo "| ⏭ Skipped | $SKIP |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧮 Total | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+
+        else
+          echo "No junit.xml found" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - uses: actions/upload-artifact@v4
+      if: ${{ inputs.ENABLE_TESTS == 'true' }}
+      with:
+        name: bun-test-results
+        path: test-results/
+
+    - name: Bun build
       shell: bash
       run: bun run build
