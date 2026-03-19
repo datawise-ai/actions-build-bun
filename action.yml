@@ -28,7 +28,29 @@ runs:
       shell: bash
       run: |
         echo "DATAWISE_PACKAGES_TOKEN=${{ inputs.DATAWISE_PACKAGES_TOKEN }}" >> $GITHUB_ENV
- 
+
+    - name: Read Node version from package.json
+      shell: bash
+      run: |
+        NODE_VERSION=$(node -p "require('./package.json').engines?.node || ''")
+        if [ -z "$NODE_VERSION" ]; then
+          echo "package.json is missing engines.node"
+          exit 1
+        fi
+
+        echo "NODE_VERSION=$NODE_VERSION" >> "$GITHUB_ENV"
+
+        echo "=============================="
+        echo " Node version from package.json"
+        echo "=============================="
+        echo "$NODE_VERSION"
+        echo "=============================="
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ env.NODE_VERSION }} 
+
     - name: Restore node_modules cache
       uses: actions/cache@v4
       with:
@@ -69,6 +91,7 @@ runs:
     - name: Bun install
       shell: bash
       run: bun install --frozen-lockfile
+
 
     - name: Show runtime versions
       shell: bash
