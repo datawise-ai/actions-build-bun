@@ -70,6 +70,31 @@ runs:
       shell: bash
       run: bun install --frozen-lockfile
 
+    - name: Show runtime versions
+      shell: bash
+      run: |
+        echo "=============================="
+        echo " Runtime information"
+        echo "=============================="
+        echo "OS:        $(uname -srm)"
+        echo "Node:      $(node --version)"
+        echo "npm:       $(npm --version)"
+        echo "Bun:       $(bun --version)"
+        echo "Bun rev:   $(bun --revision)"
+        echo "=============================="
+
+        {
+          echo "## 🚀 Runtime Information"
+          echo ""
+          echo "| Component | Version |"
+          echo "|---|---|"
+          echo "| OS | \`$(uname -srm)\` |"
+          echo "| Node.js | \`$(node --version)\` |"
+          echo "| npm | \`$(npm --version)\` |"
+          echo "| Bun | \`$(bun --version)\` |"
+          echo "| Bun revision | \`$(bun --revision)\` |"
+        } >> "$GITHUB_STEP_SUMMARY"
+
     - name: Bun Lint
       if: ${{ inputs.ENABLE_LINT == 'true' }}
       shell: bash
