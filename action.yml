@@ -165,3 +165,5 @@ runs:
     - name: Bun build
       shell: bash
       run: bun run build
+      env:
+        NODE_OPTIONS: --max-old-space-size=6144
