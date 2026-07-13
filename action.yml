@@ -25,6 +25,11 @@ inputs:
     required: false
     default: "build"
     description: "package.json script to execute"
+  APP_VERSION:
+    required: false
+    default: ""
+    description: "Optional package.json version to set before build, for example 1.2.3 or 1.2.3-beta.1"
+
 
 runs:
   using: "composite"
@@ -99,6 +104,45 @@ runs:
       shell: bash
       run: bun install --frozen-lockfile
 
+
+    - name: Set package version
+      if: ${{ inputs.APP_VERSION != '' }}
+      shell: bash
+      env:
+        APP_VERSION: ${{ inputs.APP_VERSION }}
+      run: |
+        if [[ ! "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+          echo "❌ Invalid application version: $APP_VERSION"
+          echo "Expected examples:"
+          echo "  1.2.3"
+          echo "  1.2.3-beta.1"
+          exit 1
+        fi
+
+        npm pkg set version="$APP_VERSION"
+
+        ACTUAL_VERSION="$(node -p "require('./package.json').version")"
+
+        if [[ "$ACTUAL_VERSION" != "$APP_VERSION" ]]; then
+          echo "❌ Failed to set package.json version"
+          echo "Expected: $APP_VERSION"
+          echo "Actual:   $ACTUAL_VERSION"
+          exit 1
+        fi
+
+        echo "APP_VERSION=$ACTUAL_VERSION" >> "$GITHUB_ENV"
+
+        echo "=============================="
+        echo " Application version"
+        echo "=============================="
+        echo "$ACTUAL_VERSION"
+        echo "=============================="
+
+        {
+          echo "## 📦 Application Version"
+          echo ""
+          echo "\`$ACTUAL_VERSION\`"
+        } >> "$GITHUB_STEP_SUMMARY"
 
     - name: Show runtime versions
       shell: bash
