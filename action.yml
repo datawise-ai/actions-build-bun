@@ -21,6 +21,11 @@ inputs:
     default: "false"
     description: "If true, workflow continues even when tests fail"
 
+  BUILD_SCRIPT:
+    required: false
+    default: "build"
+    description: "package.json script to execute"
+
 runs:
   using: "composite"
   steps:
@@ -164,8 +169,8 @@ runs:
         name: bun-test-results
         path: test-results/
 
-    - name: Bun build
+    - name: Run ${{ inputs.BUILD_SCRIPT }}
       shell: bash
-      run: bun run build
+      run: bun run "${{ inputs.BUILD_SCRIPT }}"
       env:
         NODE_OPTIONS: --max-old-space-size=6144
